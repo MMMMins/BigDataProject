@@ -31,3 +31,149 @@
 > 수집기간 : 약 9일 정도 예상중   
 > 클라우드 서버 이용하여, 24시간 수집   
 > DB: Mysql 사용
+
+---
+## 데이터 수집
+> 수집기한 : 11.09 ~ ing
+
+```python
+def game_list_api(URL, params=None):
+    headers = {'Content-Type': 'application/json', 'charset': 'UTF-8', 'Accept': '*/*'}
+    try:
+        response = requests.get(URL, headers=headers, params=params)
+        return response.json()
+    except Exception as e:
+        print(e)
+```
+
+### 게임목록API (요청 URL: https://api.steampowered.com/ISteamApps/GetAppList/v2)   
+``` python
+# 코드
+def getSteamGameID():
+    """
+    # table(steamGameID)
+    """
+    url = 'https://api.steampowered.com/ISteamApps/GetAppList/v2'
+    value = game_list_api(url)
+```
+> value에 저장된 값   
+> <img width="435" alt="스크린샷 2023-11-27 오후 3 11 32" src="https://github.com/MMMMins/BigDataProject/assets/113413158/75aca06d-fda6-456f-a805-d4b72c356c76">
+``` python
+    # None 제거
+    steamGameId = pd.DataFrame(value['applist']['apps'])
+    steamGameId = steamGameId[steamGameId['name'] != '']
+    steamGameId = steamGameId.drop_duplicates(keep='first')
+```
+> 결측치 제거   
+> <img width="435" alt="스크린샷 2023-11-27 오후 2 30 43" src="https://github.com/MMMMins/BigDataProject/assets/113413158/a8725205-fe5c-4290-b45e-2644b986c58c">
+``` python
+    # 중복 APPID 제거
+    duplicate_index = steamGameId.index[steamReviewDf.index.duplicated()]
+    df_no_duplicate_rows = steamGameId.drop_duplicates(keep='first')
+    df_no_duplicate_rows
+```
+> 중복값 체크후 제거   
+> <img width="435" alt="스크린샷 2023-11-27 오후 1 49 25" src="https://github.com/MMMMins/BigDataProject/assets/113413158/ac41b6ad-e535-4ff8-8805-5669933012a8">
+> <img width="550" alt="스크린샷 2023-11-27 오후 1 39 19" src="https://github.com/MMMMins/BigDataProject/assets/113413158/57b80509-74ce-497a-bbbc-036845f1aa7e">
+
+``` python
+    # 데이터베이스에 저장
+    df_no_duplicate_rows.to_sql(name='steamGameID', con=engine, if_exists='append', index=False)
+```
+
+### 게임정보 API
+``` python
+def getSteamGameInfo():
+    url = 'https://store.steampowered.com/api/appdetails'
+    param = {
+        'appids': '',
+        'l':'korean'
+    }
+```
+
+``` python
+    sql_query = text("SELECT appid FROM steamGameID")
+
+    # 데이터베이스에서 데이터 읽어오기
+    result = connection.execute(sql_query)
+
+    # fetchall()을 사용하여 값 리스트로 가져오기
+    appid_list = [row[0] for row in result.fetchall()]
+    SteamGameInfoDF = pd.DataFrame(columns=["appid", "is_free", "recommendations", "release_date", "release_status", "score", "price", "age"])
+    SteamGameCateDF = pd.DataFrame(columns=['appid','categori'])
+    SteamTypeDF = pd.DataFrame(columns=['appid', 'type'])
+    appid_list = list(set(appid_list))
+    save_flag = False
+```
+> **준비 단계**
+> 1. 데이터 베이스에 저장된 APPID목록 전체 조회
+> 2. 해당 API에서 얻을 수 있는 정보들을 담을 수 있는 데이터프레임 생성
+>    1. SteamGameInfoDF : 게임에 대한 기본적인 내용
+>    2. SteamGameCateDF : 게임에 대한 장르 정보 (게임과 장르는 1:n 관계로 별도의 데이터프레임으로 분리했다.)
+>    3. SteamTypeDF : API호출로 얻은 APPID에 대한 Type정보 (Steam에 대한 타입은 game, dlc, music ... 이 있다.)
+> 3. save_flag는 임시저장용도로 만들었으며, 본 프로그램이 실행중 에러가 날 경우 현재까지 정보를 저장한다.
+
+``` python
+    for appid in appid_list:
+        try:
+            print(appid, end='\t')
+            param['appids'] = str(appid)
+            value = game_list_api(url, param)
+            gameLoadSuccessDict = value[str(appid)]
+            print(gameLoadSuccessDict)
+
+            if not gameLoadSuccessDict['success']:
+                continue
+            gameInfoDataDict = gameLoadSuccessDict['data']
+
+            SteamTypeDF.loc[len(SteamTypeDF)] = {'appid': appid, 'type':gameInfoDataDict['type']}
+
+            if gameInfoDataDict['type'] != 'game' and gameInfoDataDict['type'] != 'dlc':
+                continue
+
+            score = -1
+            price = 0
+            if 'metacritic' in gameInfoDataDict:
+                score = gameInfoDataDict['metacritic']['score']
+
+            if 'price_overview' in gameInfoDataDict:
+                price = gameInfoDataDict['price_overview']['final_formatted']
+
+            SteamGameInfoDF.loc[len(SteamGameInfoDF)] =\
+                {
+                    'appid': appid,
+                    'is_free': gameInfoDataDict['is_free'],
+                    'recommendations': gameInfoDataDict['detailed_description'],
+                    'release_date': gameInfoDataDict['release_date']['date'],
+                    'release_status': gameInfoDataDict['release_date']['coming_soon'],
+                    'score': score,
+                    'price': price,
+                    'age': gameInfoDataDict['required_age']
+                }
+            if 'categories' not in gameInfoDataDict:
+                continue
+
+            for cate in gameInfoDataDict['categories']:
+                SteamGameCateDF.loc[len(SteamGameCateDF)] = \
+                    {
+                        'appid': appid,
+                        'categori': cate['description']
+                    }
+            save_flag = False
+        except Exception as e:
+            print(f"ERROR: {appid}")
+            if not save_flag:
+                SteamGameCateDF.to_csv("SteamGameCateDF.csv", encoding="utf-8")
+                SteamGameInfoDF.to_csv("SteamGameInfoDF.csv", encoding="utf-8")
+                SteamTypeDF.to_csv("SteamTypeDF.csv", encoding="utf-8")
+                save_flag = True
+            with open('error_log.txt', 'a') as error_file:
+                error_file.write(f"{appid}, ")
+                appid_list.append(appid)
+            continue
+    return SteamGameCateDF, SteamGameInfoDF, SteamTypeDF
+df1, df2, df3 = getSteamGameInfo()
+df1.to_csv('SteamGameCateDF_final.csv', encoding="utf-8")
+df2.to_csv('SteamGameInfoDF_final.csv', encoding="utf-8")
+df3.to_csv('SteamTypeDF_final.csv', encoding="utf-8")
+```
