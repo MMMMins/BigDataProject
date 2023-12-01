@@ -332,8 +332,8 @@ for i in range(len(labels)):
     plt.text(labels[i], height + 0.25, sizes[i], ha='center', va='bottom', size = 12)
 plt.bar(height=sizes, x=labels)
 ```
-<img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/8944b5f5-4326-4458-b2b7-7b08e0a754c8">
-<img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/f0e91fb8-7bf4-4c04-839e-82155b02a705">
+<img width="300" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/8944b5f5-4326-4458-b2b7-7b08e0a754c8">
+<img width="300" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/f0e91fb8-7bf4-4c04-839e-82155b02a705">
 
 > -: 긍정/부정 아닌 이상한 리뷰들   
 <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/964178ea-247b-4857-96e9-c65303454b0e">
@@ -367,8 +367,8 @@ for i in range(len(labels)):
     plt.text(labels[i], height + 0.25, sizes[i], ha='center', va='bottom', size = 12)
 plt.bar(height=sizes, x=labels)
 ```
-<img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/f723e619-2278-4f77-9037-0834aeaddf22">
-<img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/5d73916d-a9ac-47dc-8e30-670a840cfbfb">
+<img width="300" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/f723e619-2278-4f77-9037-0834aeaddf22">
+<img width="300" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/5d73916d-a9ac-47dc-8e30-670a840cfbfb">
 
 > -: 긍정/부정 아닌 이상한 리뷰들   
 <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/e214e726-fcef-4821-82d2-fc62fdea0687">
@@ -403,8 +403,8 @@ for i in range(len(labels)):
     plt.text(labels[i], height + 0.25, sizes[i], ha='center', va='bottom', size = 12)
 plt.bar(height=sizes, x=labels)
 ```
-<img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/9a0273c5-14f8-4030-8a63-f3927c89ec14">
-<img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/2a07ff1a-03b6-47b4-ad3a-27a72540bebc">
+<img width="300" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/9a0273c5-14f8-4030-8a63-f3927c89ec14">
+<img width="300" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/2a07ff1a-03b6-47b4-ad3a-27a72540bebc">
 
 > -: 긍정/부정 아닌 이상한 리뷰들
 <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/5ae6645b-570f-46af-9947-6d2584a4aba1">
