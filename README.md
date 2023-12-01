@@ -72,9 +72,11 @@ def getSteamGameID():
     df_no_duplicate_rows = steamGameId.drop_duplicates(keep='first')
     df_no_duplicate_rows
 ```
-> 중복값 체크후 제거   
-> <img width="435" alt="스크린샷 2023-11-27 오후 1 49 25" src="https://github.com/MMMMins/BigDataProject/assets/113413158/ac41b6ad-e535-4ff8-8805-5669933012a8">
-> <img width="550" alt="스크린샷 2023-11-27 오후 1 39 19" src="https://github.com/MMMMins/BigDataProject/assets/113413158/57b80509-74ce-497a-bbbc-036845f1aa7e">
+> 중복값 체크후 제거
+> - 중복값 개수 
+> > <img width="550" alt="스크린샷 2023-11-27 오후 1 49 25" src="https://github.com/MMMMins/BigDataProject/assets/113413158/ac41b6ad-e535-4ff8-8805-5669933012a8">
+> - 제거 후 개수
+> > <img width="550" alt="스크린샷 2023-11-27 오후 1 39 19" src="https://github.com/MMMMins/BigDataProject/assets/113413158/57b80509-74ce-497a-bbbc-036845f1aa7e">
 
 ``` python
     # 데이터베이스에 저장
@@ -113,6 +115,7 @@ def getSteamGameInfo():
 >    3. SteamTypeDF : API호출로 얻은 APPID에 대한 Type정보 (Steam에 대한 타입은 game, dlc, music ... 이 있다.)
 > 3. save_flag는 임시저장용도로 만들었으며, 본 프로그램이 실행중 에러가 날 경우 현재까지 정보를 저장한다.
 
+### 게임상세정보 API
 ``` python
     for appid in appid_list:
         try:
@@ -177,3 +180,55 @@ df1.to_csv('SteamGameCateDF_final.csv', encoding="utf-8")
 df2.to_csv('SteamGameInfoDF_final.csv', encoding="utf-8")
 df3.to_csv('SteamTypeDF_final.csv', encoding="utf-8")
 ```
+> **문제점**   
+> <img width="600" alt="스크린샷 2023-12-01 오후 7 31 35" src="https://github.com/MMMMins/BigDataProject/assets/113413158/90545745-45e2-4bba-8d55-4fd481d56bdc">
+> ---
+> 데이터 개수 15만개 + 분당 API 요청 제한으로 3일 이상 소요
+> - 에러 리스트 
+> > <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/80bd436c-d3a0-40e1-8644-55200ccd7944">   
+> - 요청제한으로 취소된 API요청 못한 AppID목록   
+> > <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/9691efe8-5a01-4e45-8c6a-8c3a82121f1e">   
+
+#### 11월 30일 기준 쌓인 데이터 개수 (SteamTypeDF.csv : 해당 AppID의 분류)
+```python
+SteamTypeDF = pd.read_csv('SteamTypeDF.csv', encoding='utf-8')
+SteamTypeDF
+```
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/c1bbce03-4654-41c2-ad19-31b01395db68">
+
+#### 인덱스 재설정
+```python
+SteamTypeDF.drop(columns=['Unnamed: 0'], inplace=True)
+SteamTypeDF.tail(5)
+```
+<img width="600" alt="스크린샷 2023-12-01 오후 7 47 08" src="https://github.com/MMMMins/BigDataProject/assets/113413158/3779ec67-1c6c-4327-ad43-4f2c93be5bbf">
+
+#### 타입별 퍼센트
+```python
+type_counts = SteamTypeDF['type'].value_counts()
+labels = type_counts.index.tolist()
+sizes = type_counts.values
+
+total_size = sum(sizes)
+small_indices = sizes / total_size < 1 / 100
+
+resize_list = list()
+reindex_list = list()
+# 라벨 변경
+for i in range(len(labels)):
+    if small_indices[i]:
+        reindex_list.append('etc')
+        resize_list.append(sum(sizes[i:]))
+        break
+    else:
+        reindex_list.append(labels[i])
+        resize_list.append(sizes[i])
+
+
+plt.pie(resize_list, labels=reindex_list, autopct='%1.1f%%', startangle=40, explode=[0, 0, 0, 0.2, 0.35, 0.45])
+plt.axis('equal')
+plt.show()
+```
+<img width="600" alt="도형" src="https://github.com/MMMMins/BigDataProject/assets/113413158/50c707a3-affe-42bd-96b6-e2b597c13fad">
+
+#### 추가적인
