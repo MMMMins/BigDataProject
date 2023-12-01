@@ -1,4 +1,4 @@
-# BigDataProject
+<img width="657" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/26a0f0b4-1e6e-4047-9a51-c9984eff55c1"># BigDataProject
 (NLP)스팀 리뷰 데이터를 읽고, (긍정/부정) 또는 사용자에게 맞는 게임 추천하기 
 
 
@@ -319,14 +319,24 @@ do[['review','timestamp_created','voted_up', 'author.playtime_at_review']].head(
 dol = pd.read_csv('라벨링작업후/도타리뷰.csv', encoding='utf-8')
 dol[['review','timestamp_created','voted_up','label']].head(5)
 ```
-<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/cac50930-68f3-4927-9130-a5a268a6e5d1">
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/916a693b-7477-40f8-876e-fcbb5518cb76">
 
 **긍정/부정 비율**   
 ```python
 sizes =dol['label'].value_counts().values
 plt.pie(sizes, labels=['Positive','negative','-'], autopct='%1.1f%%', startangle=90, explode=[0,0,0.3])
+
+labels = ['Positive','negative','-']
+for i in range(len(labels)):
+    height = sizes[i]
+    plt.text(labels[i], height + 0.25, sizes[i], ha='center', va='bottom', size = 12)
+plt.bar(height=sizes, x=labels)
 ```
-<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/ccd3495e-1c62-45f1-b71c-e700460b3995)">
+<img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/8944b5f5-4326-4458-b2b7-7b08e0a754c8">
+<img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/f0e91fb8-7bf4-4c04-839e-82155b02a705">
+
+> -: 긍정/부정 아닌 이상한 리뷰들   
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/964178ea-247b-4857-96e9-c65303454b0e">
 
 
 #### 엘든링.csv DataFrame
@@ -335,14 +345,67 @@ el.columns
 el[['review','timestamp_created','voted_up', 'author.playtime_at_review']].head(5)
 ```
 <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/b9902949-2b7d-4530-9ffc-9cbeac39e46e">
+
+**라벨링 작업전**   
 <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/0865c147-0e59-40c3-bc2a-d66faf4a89c5">
+
+**라벨링 작업후**   
+```python
+ell = pd.read_csv('라벨링작업후/엘등린리뷰.csv', encoding='utf-8')
+ell[['review','timestamp_created','voted_up','label']].head(5)
+```
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/3a5f5be1-0bc3-4c61-8f16-1c0bca7ae8b4">
+
+**긍정/부정 비율**   
+```python
+sizes =ell['label'].value_counts().values
+plt.pie(sizes, labels=['Positive','negative','-'], autopct='%1.1f%%', startangle=90, explode=[0,0,0.3])
+
+labels = ['Positive','negative','-']
+for i in range(len(labels)):
+    height = sizes[i]
+    plt.text(labels[i], height + 0.25, sizes[i], ha='center', va='bottom', size = 12)
+plt.bar(height=sizes, x=labels)
+```
+<img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/f723e619-2278-4f77-9037-0834aeaddf22">
+<img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/5d73916d-a9ac-47dc-8e30-670a840cfbfb">
+
+> -: 긍정/부정 아닌 이상한 리뷰들   
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/e214e726-fcef-4821-82d2-fc62fdea0687">
+
 
 #### 카스2.csv DataFrame
 ```python
 ca.columns
-ca[['review','timestamp_created','voted_up', 'author.playtime_at_review']].head(5)
+ca[['review','timestamp_created','voted_up', 'author.playtime_at_review']]
 ```
 <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/ca8660c0-28d4-4f89-b1b7-d7d2daeb8c6e">
+
+**라벨링 작업전**   
 <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/4c4aab6e-2809-41d0-93f0-20511237f0ac">
 
+**라벨링 작업후**
+```python
+cal = pd.read_csv('라벨링작업후/카스2리뷰.csv', encoding='utf-8')
+cal[['review','timestamp_created','voted_up','label']]
+```
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/f7b33920-fc07-440b-adb7-386dff97b90c">
+
+
+**긍정/부정 비율**
+```python
+sizes =cal['label'].value_counts().values
+plt.pie(sizes, labels=['Positive','negative','-'], autopct='%1.1f%%', startangle=90, explode=[0,0,0.3])
+
+labels = ['Positive','negative','-']
+for i in range(len(labels)):
+    height = sizes[i]
+    plt.text(labels[i], height + 0.25, sizes[i], ha='center', va='bottom', size = 12)
+plt.bar(height=sizes, x=labels)
+```
+<img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/9a0273c5-14f8-4030-8a63-f3927c89ec14">
+<img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/2a07ff1a-03b6-47b4-ad3a-27a72540bebc">
+
+> -: 긍정/부정 아닌 이상한 리뷰들
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/5ae6645b-570f-46af-9947-6d2584a4aba1">
 
