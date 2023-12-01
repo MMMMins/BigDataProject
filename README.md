@@ -1,6 +1,5 @@
-<img width="657" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/26a0f0b4-1e6e-4047-9a51-c9984eff55c1"># BigDataProject
-(NLP)스팀 리뷰 데이터를 읽고, (긍정/부정) 또는 사용자에게 맞는 게임 추천하기 
-
+<img width="657" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/148d05b5-4055-44f5-be54-dad597bb1088"># BigDataProject
+스팀 리뷰 데이터를 읽고, (긍정/부정) 또는 사용자에게 맞는 게임 추천하기 
 
 1. 데이터 수집 및 저장 (***Steam Web API***)
 2. 데이터 정제
@@ -180,14 +179,6 @@ df1.to_csv('SteamGameCateDF_final.csv', encoding="utf-8")
 df2.to_csv('SteamGameInfoDF_final.csv', encoding="utf-8")
 df3.to_csv('SteamTypeDF_final.csv', encoding="utf-8")
 ```
-> **문제점**   
-> <img width="600" alt="스크린샷 2023-12-01 오후 7 31 35" src="https://github.com/MMMMins/BigDataProject/assets/113413158/90545745-45e2-4bba-8d55-4fd481d56bdc">
-> ---
-> 데이터 개수 15만개 + 분당 API 요청 제한으로 3일 이상 소요
-> - 에러 리스트 
-> > <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/80bd436c-d3a0-40e1-8644-55200ccd7944">   
-> - 요청제한으로 취소된 API요청 못한 AppID목록   
-> > <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/9691efe8-5a01-4e45-8c6a-8c3a82121f1e">   
 
 #### 1. SteamTypeDF.csv : 해당 AppID의 분류 [기준일 : 11.30]
 ```python
@@ -248,7 +239,17 @@ SteamGameCateDF
 <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/5d4962be-44da-4a86-a647-613d85eae11f">
 
 #### 문제점
-1. 앞서 말한 기초 데이터 수집의 시간의 문제
+1.     
+> <img width="600" alt="스크린샷 2023-12-01 오후 7 31 35" src="https://github.com/MMMMins/BigDataProject/assets/113413158/90545745-45e2-4bba-8d55-4fd481d56bdc"> 
+>
+>  ---   
+>    
+> 데이터 개수 15만개 + 분당 API 요청 제한으로 3일 이상 소요   
+> - 에러 리스트   
+> > <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/80bd436c-d3a0-40e1-8644-55200ccd7944">   
+> - 요청제한으로 취소된 API요청 못한 AppID목록   
+> > <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/9691efe8-5a01-4e45-8c6a-8c3a82121f1e">   
+
 2. 기초 데이터를 기반으로 리뷰데이터를 수집해야하는데, 18만개 + a의 개수로 데이터 양이 방대하고 분당 API요청 제한으로 한계치가 있음
 ---
 
@@ -314,6 +315,35 @@ do[['review','timestamp_created','voted_up', 'author.playtime_at_review']].head(
 **라벨링 작업전**   
 <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/b8318bbb-50fc-413a-85eb-b8a110c00f1d">
 
+**결측치 확인**
+```python
+print(do.isnull().sum())
+```
+>recommendationid                  0   
+language                          0   
+review                            0   
+timestamp_created                 0   
+timestamp_updated                 0   
+voted_up                          0   
+votes_up                          0   
+votes_funny                       0   
+weighted_vote_score               0   
+comment_count                     0   
+steam_purchase                    0   
+received_for_free                 0   
+written_during_early_access       0   
+hidden_in_steam_china             0   
+steam_china_location              0   
+author.steamid                    0   
+author.num_games_owned            0   
+author.num_reviews                0   
+author.playtime_forever           0   
+author.playtime_last_two_weeks    0   
+author.playtime_at_review         0   
+author.last_played                0   
+dtype: int64
+
+
 **라벨링 작업후**   
 ```python
 dol = pd.read_csv('라벨링작업후/도타리뷰.csv', encoding='utf-8')
@@ -348,6 +378,34 @@ el[['review','timestamp_created','voted_up', 'author.playtime_at_review']].head(
 
 **라벨링 작업전**   
 <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/0865c147-0e59-40c3-bc2a-d66faf4a89c5">
+
+**결측치 확인**
+```python
+print(el.isnull().sum())
+```
+>recommendationid                  0   
+language                          0   
+review                            0   
+timestamp_created                 0   
+timestamp_updated                 0   
+voted_up                          0   
+votes_up                          0   
+votes_funny                       0   
+weighted_vote_score               0   
+comment_count                     0   
+steam_purchase                    0   
+received_for_free                 0   
+written_during_early_access       0   
+hidden_in_steam_china             0   
+steam_china_location              0   
+author.steamid                    0   
+author.num_games_owned            0   
+author.num_reviews                0   
+author.playtime_forever           0   
+author.playtime_last_two_weeks    0   
+author.playtime_at_review         0   
+author.last_played                0   
+dtype: int64   
 
 **라벨링 작업후**   
 ```python
@@ -384,6 +442,35 @@ ca[['review','timestamp_created','voted_up', 'author.playtime_at_review']]
 **라벨링 작업전**   
 <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/4c4aab6e-2809-41d0-93f0-20511237f0ac">
 
+**결측치 확인**
+```python
+print(ca.isnull().sum())
+```
+>recommendationid                  0   
+language                          0   
+review                            0   
+timestamp_created                 0   
+timestamp_updated                 0   
+voted_up                          0   
+votes_up                          0   
+votes_funny                       0   
+weighted_vote_score               0   
+comment_count                     0   
+steam_purchase                    0   
+received_for_free                 0   
+written_during_early_access       0   
+hidden_in_steam_china             0   
+steam_china_location              0   
+author.steamid                    0   
+author.num_games_owned            0   
+author.num_reviews                0   
+author.playtime_forever           0   
+author.playtime_last_two_weeks    0   
+author.playtime_at_review         0   
+author.last_played                0   
+dtype: int64   
+
+
 **라벨링 작업후**
 ```python
 cal = pd.read_csv('라벨링작업후/카스2리뷰.csv', encoding='utf-8')
@@ -409,3 +496,77 @@ plt.bar(height=sizes, x=labels)
 > -: 긍정/부정 아닌 이상한 리뷰들
 <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/5ae6645b-570f-46af-9947-6d2584a4aba1">
 
+---
+#### 결측치 라벨 제거
+```python
+dodrop = dol.drop(dol[dol['label'] == 2].index)
+eldrop = ell.drop(ell[ell['label'] == 2].index)
+cadrop =cal.drop(cal[cal['label'] == 2].index)
+print(f'도타리뷰 데이터 \t | 삭제전 개수: {len(dodrop.index)} 삭제후 개수: {len(dol.index)}')
+print(f'엘든링리뷰 데이터 \t | 삭제전 개수: {len(eldrop.index)} 삭제후 개수: {len(ell.index)}')
+print(f'카스2리뷰 데이터 \t | 삭제전 개수: {len(cadrop.index)} 삭제후 개수: {len(cal.index)}')
+```
+>도타리뷰 데이터 	 | 삭제전 개수: 132 삭제후 개수: 137   
+>엘든링리뷰 데이터 	 | 삭제전 개수: 553 삭제후 개수: 555   
+>카스2리뷰 데이터 	 | 삭제전 개수: 436 삭제후 개수: 438   
+
+#### 예상못한 결측치
+> 한글 리뷰 분석으로 영어나 이상한 문자로 된 것은 삭제해서 라벨링을 했어야 했다.
+
+```python
+dodrop['review'] = dodrop['review'].apply(lambda x : re.sub(r'[^ ㄱ-ㅣ가-힣]+', "", x))
+dodrop['review'] = dodrop['review'].apply(lambda x: None if len(x.strip())==0 else x )
+dodrop[dodrop['review'].isnull()==True]
+```
+**도타 결측치 데이터**   
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/eb4d445b-c3a5-4f76-aed8-cfe077ba8103">
+
+
+
+```python
+dodrop.drop(columns='Column1', inplace=True)
+dodrop.drop(index=dodrop[dodrop['review'].isnull()==True].index,inplace=True)
+dodrop
+```
+**도타 제거후 데이터**   
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/36b2545f-a081-421a-a2bf-00bfb2c5872d">
+
+---
+
+```python
+eldrop['review'] = eldrop['review'].apply(lambda x : re.sub(r'[^ ㄱ-ㅣ가-힣]+', "", x))
+eldrop['review'] = eldrop['review'].apply(lambda x: None if len(x.strip())==0 else x )
+eldrop[eldrop['review'].isnull()==True]
+```
+**엘든링 결측치 데이터**   
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/1f185913-54f6-4868-b7c3-9b09cbf167eb">
+
+
+
+```python
+eldrop.drop(columns='Column1', inplace=True)
+eldrop.drop(index=eldrop[eldrop['review'].isnull()==True].index,inplace=True)
+eldrop
+```
+**엘든링 제거후 데이터**   
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/8bd699d9-83c7-4f8e-8d0f-16d70aa9641e">
+
+---
+
+```python
+cadrop['review'] = cadrop['review'].apply(lambda x : re.sub(r'[^ ㄱ-ㅣ가-힣]+', "", x))
+cadrop['review'] = cadrop['review'].apply(lambda x: None if len(x.strip())==0 else x )
+cadrop[cadrop['review'].isnull()==True]
+```
+**카스2 결측치 데이터**   
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/643c31c0-5c2f-471c-9cd6-acd8560a4f2b">
+
+
+
+```python
+cadrop.drop(columns='Column1', inplace=True)
+cadrop.drop(index=cadrop[cadrop['review'].isnull()==True].index,inplace=True)
+cadrop
+```
+**카스2 제거후 데이터**   
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/0d612d37-005d-47f1-9e4b-d3c7f52deb39">
