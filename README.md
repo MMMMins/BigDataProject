@@ -1,4 +1,4 @@
-<img width="656" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/21692cb5-8c17-45a1-8073-bdff185d0bb5"># BigDataProject
+# BigDataProject
 (NLP)스팀 리뷰 데이터를 읽고, (긍정/부정) 또는 사용자에게 맞는 게임 추천하기 
 
 
