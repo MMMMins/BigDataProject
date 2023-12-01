@@ -1,4 +1,4 @@
-# BigDataProject
+<img width="656" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/21692cb5-8c17-45a1-8073-bdff185d0bb5"># BigDataProject
 (NLP)스팀 리뷰 데이터를 읽고, (긍정/부정) 또는 사용자에게 맞는 게임 추천하기 
 
 
@@ -189,7 +189,7 @@ df3.to_csv('SteamTypeDF_final.csv', encoding="utf-8")
 > - 요청제한으로 취소된 API요청 못한 AppID목록   
 > > <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/9691efe8-5a01-4e45-8c6a-8c3a82121f1e">   
 
-#### 11월 30일 기준 쌓인 데이터 개수 (SteamTypeDF.csv : 해당 AppID의 분류)
+#### 1. SteamTypeDF.csv : 해당 AppID의 분류 [기준일 : 11.30]
 ```python
 SteamTypeDF = pd.read_csv('SteamTypeDF.csv', encoding='utf-8')
 SteamTypeDF
@@ -231,4 +231,118 @@ plt.show()
 ```
 <img width="600" alt="도형" src="https://github.com/MMMMins/BigDataProject/assets/113413158/50c707a3-affe-42bd-96b6-e2b597c13fad">
 
-#### 추가적인
+#### 2. SteamGameInfoDF.csv : 해당 AppID의 분류 [기준일 : 11.30]
+```python
+SteamGameInfoDF = pd.read_csv('SteamGameInfoDF.csv', encoding='utf-8')
+SteamGameInfoDF.drop(columns=['Unnamed: 0'], inplace=True)
+SteamGameInfoDF
+```
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/da1f7b7b-8f21-41c0-8867-ba64992ed517">
+
+#### 3. Steam.csv : 해당 AppID의 분류 [기준일 : 11.30]
+```python
+SteamGameCateDF = pd.read_csv('SteamGameCateDF.csv', encoding='utf-8')
+SteamGameCateDF.drop(columns=['Unnamed: 0'], inplace=True)
+SteamGameCateDF
+```
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/5d4962be-44da-4a86-a647-613d85eae11f">
+
+#### 문제점
+1. 앞서 말한 기초 데이터 수집의 시간의 문제
+2. 기초 데이터를 기반으로 리뷰데이터를 수집해야하는데, 18만개 + a의 개수로 데이터 양이 방대하고 분당 API요청 제한으로 한계치가 있음
+---
+
+### 해결안
+> 게임 3종만 추려서 리뷰데이터 분석 예정
+> 게임 3종 (도타2, 엘든링, 카스2)
+
+**리뷰데이터 수집API**
+```python
+def getGameReview(appid, filename):
+    save_flag = True
+    count = 0
+    url_base = f'https://store.steampowered.com/appreviews/{appid}?json=1&l=korean&num_per_page=100&review_type=all&purchase_type=all&day_range=365&cursor='
+
+    # first pass
+    url = urllib.request.urlopen(
+        f"https://store.steampowered.com/appreviews/{appid}?json=1&l=korean&num_per_page=100&review_type=all&purchase_type=all&day_range=365&cursor=*")
+    data = json.loads(url.read().decode())
+    next_cursor = data['cursor']
+    df1 = json_normalize(data['reviews'])
+    count += 100
+    cursorList = []
+    try:
+        while True:
+            url_temp = url_base + parse.quote(next_cursor)
+            url = urllib.request.urlopen(url_temp)
+            data = json.loads(url.read().decode())
+
+            next_cursor = data['cursor']
+            if next_cursor in cursorList:
+                break
+            cursorList.append(next_cursor)
+            df2 = json_normalize(data['reviews'])
+            df1 = pd.concat([df1, df2])
+            count += 100
+            print(f"{count}: {next_cursor}")
+            df1.drop_duplicates(['recommendationid'],ignore_index=True, inplace=True)
+            if not save_flag:
+                save_flag = True
+    except Exception as e:
+
+        if save_flag:
+            df1.to_csv(f"라벨링작업전/{filename}_er.csv", encoding='utf-8')
+            save_flag = False
+        with open('error_log.txt', 'a') as error_file:
+            error_file.write(f"{count}: {next_cursor}\n")
+    df1.to_csv(f"라벨링작업전/{filename}.csv", encoding='utf-8')
+    return df1
+```
+```python
+do = getGameReview(570, '도타')
+el = getGameReview(1245620, '엘든링')
+ca = getGameReview(730, '카스2')
+```
+
+#### 도타.csv DataFrame
+```python
+do.columns
+do[['review','timestamp_created','voted_up', 'author.playtime_at_review']].head(5)
+```
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/52561a5c-8ab3-48ff-949b-c8cb3bdc0703">
+
+**라벨링 작업전**   
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/b8318bbb-50fc-413a-85eb-b8a110c00f1d">
+
+**라벨링 작업후**   
+```python
+dol = pd.read_csv('라벨링작업후/도타리뷰.csv', encoding='utf-8')
+dol[['review','timestamp_created','voted_up','label']].head(5)
+```
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/cac50930-68f3-4927-9130-a5a268a6e5d1">
+
+**긍정/부정 비율**   
+```python
+sizes =dol['label'].value_counts().values
+plt.pie(sizes, labels=['Positive','negative','-'], autopct='%1.1f%%', startangle=90, explode=[0,0,0.3])
+```
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/ccd3495e-1c62-45f1-b71c-e700460b3995)">
+
+
+#### 엘든링.csv DataFrame
+```python
+el.columns
+el[['review','timestamp_created','voted_up', 'author.playtime_at_review']].head(5)
+```
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/b9902949-2b7d-4530-9ffc-9cbeac39e46e">
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/0865c147-0e59-40c3-bc2a-d66faf4a89c5">
+
+#### 카스2.csv DataFrame
+```python
+ca.columns
+ca[['review','timestamp_created','voted_up', 'author.playtime_at_review']].head(5)
+```
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/ca8660c0-28d4-4f89-b1b7-d7d2daeb8c6e">
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/4c4aab6e-2809-41d0-93f0-20511237f0ac">
+
+
