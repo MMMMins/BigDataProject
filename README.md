@@ -731,4 +731,81 @@ print("cs2: "+str(cs2_invert_index_vectorizer)[:100]+'...')
 
 
 #### 리뷰 데이터 예측 모델 작성
+ 
+**test/train 케이스 분류**   
+```python
+from sklearn.model_selection import train_test_split
 
+def testandtrain(x, y):
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.3, random_state=1)
+    return {"x_train":x_train, "x_test":x_test, "y_train":y_train, "y_test":y_test}
+
+dota_case = testandtrain(dota_tf_idf_vect, dodrop['label'])
+elden_case = testandtrain(el_tf_idf_vect, eldrop['label'])
+cs2_case = testandtrain(cs_tf_idf_vect, cadrop['label'])
+```
+   
+*x,y train shape*   
+>dota_case: (87, 1117), (87,)   
+>elden_case: (369, 2835), (369,)   
+>cs2_case: (238, 1615), (238,)
+
+**모델 학습**
+```python
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+def lrstart(case):
+    lr = LogisticRegression(random_state = 0)
+    lr.fit(case["x_train"], case["y_train"])
+
+    y_pred = lr.predict(case["x_test"])
+    print('accuracy: %.2f' % accuracy_score(case["y_test"], y_pred))
+    print('precision: %.2f' % precision_score(case["y_test"], y_pred))
+    print('recall: %.2f' % recall_score(case["y_test"], y_pred))
+    print('F1: %.2f' % f1_score(case["y_test"], y_pred))
+    return y_pred
+```
+
+##### 정확도
+dota:   
+accuracy: 0.82   
+precision: 0.88   
+recall: 0.74   
+F1: 0.80   
+
+---
+elden:    
+accuracy: 0.76   
+precision: 0.76   
+recall: 0.97   
+F1: 0.85   
+
+---
+cs2:    
+accuracy: 0.70   
+precision: 0.77   
+recall: 0.40   
+F1: 0.52   
+
+---
+
+**예측결과 확인**
+```python
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+
+def pltshow(name, case, y_pred):
+    confu = confusion_matrix(y_true = case["y_test"], y_pred = y_pred)
+    
+    plt.figure(figsize=(4, 3))
+    sns.heatmap(confu, annot=True, annot_kws={'size':15}, cmap='OrRd', fmt='.10g')
+    plt.title(f'{name}: Matrix')
+    plt.show()
+pltshow("도타", dota_case, dota_pred)
+pltshow("엘든링", elden_case, elden_pred)
+pltshow("카스2", cs2_case, cs2_pred)
+```
+![도타Matrix](https://github.com/MMMMins/BigDataProject/assets/113413158/89816413-241e-46ee-8a7c-dab26aeb607a)   
+![엘든링Matrix](https://github.com/MMMMins/BigDataProject/assets/113413158/53929cf0-f2e8-4efc-8df8-367e665b88a0)   
+![카스2Matrix](https://github.com/MMMMins/BigDataProject/assets/113413158/3d3c2410-bf57-4b7e-9de0-84b3efde651b)   
