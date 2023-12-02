@@ -502,13 +502,13 @@ plt.bar(height=sizes, x=labels)
 dodrop = dol.drop(dol[dol['label'] == 2].index)
 eldrop = ell.drop(ell[ell['label'] == 2].index)
 cadrop =cal.drop(cal[cal['label'] == 2].index)
-print(f'도타리뷰 데이터 \t | 삭제전 개수: {len(dodrop.index)} 삭제후 개수: {len(dol.index)}')
-print(f'엘든링리뷰 데이터 \t | 삭제전 개수: {len(eldrop.index)} 삭제후 개수: {len(ell.index)}')
-print(f'카스2리뷰 데이터 \t | 삭제전 개수: {len(cadrop.index)} 삭제후 개수: {len(cal.index)}')
+print(f'도타리뷰 데이터 \t | 삭제전 개수: {len(dol.index)} 삭제후 개수: {len(dodrop.index)}')
+print(f'엘든링리뷰 데이터 \t | 삭제전 개수: {len(ell.index)} 삭제후 개수: {len(eldrop.index)}')
+print(f'카스2리뷰 데이터 \t | 삭제전 개수: {len(cal.index)} 삭제후 개수: {len(cadrop.index)}')
 ```
->도타리뷰 데이터 	 | 삭제전 개수: 132 삭제후 개수: 137   
->엘든링리뷰 데이터 	 | 삭제전 개수: 553 삭제후 개수: 555   
->카스2리뷰 데이터 	 | 삭제전 개수: 436 삭제후 개수: 438   
+>도타리뷰 데이터 	 | 삭제전 개수: 137 삭제후 개수: 132   
+>엘든링리뷰 데이터 	 | 삭제전 개수: 555 삭제후 개수: 553   
+>카스2리뷰 데이터 	 | 삭제전 개수: 438 삭제후 개수: 436   
 
 #### 예상못한 결측치
 > 한글 리뷰 분석으로 영어나 이상한 문자로 된 것은 삭제해서 라벨링을 했어야 했다.
@@ -570,3 +570,111 @@ cadrop
 ```
 **카스2 제거후 데이터**   
 <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/0d612d37-005d-47f1-9e4b-d3c7f52deb39">
+
+---
+
+#### 불용어 제거
+*RANKS NL에 제공해주는 한국어 불용어 사전 활용*   
+> https://www.ranks.nl/stopwords/korean   
+```python
+stopwords = pd.read_csv("https://raw.githubusercontent.com/yoonkt200/FastCampusDataset/master/korean_stopwords.txt").values.tolist()
+stopwords
+```
+<img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/e5bc0940-4b2a-4b81-8bd8-42bd4cca1638">
+
+#### 단어 빈도수 측정 [2가지 방법]
+
+##### 카운터함수 사용
+```python
+from konlpy.tag import Okt
+from collections import Counter
+
+okt = Okt()
+def frequency_text(df):
+    corpus = "".join(df['review'].tolist())
+    nouns = okt.nouns(corpus)
+    counter = Counter(nouns)
+    #available_counter = Counter({x: counter[x] for x in counter if len(x) > 1 or x =='핵'})
+    available_counter = Counter({x: counter[x] for x in counter if x not in stopwords})
+    print(available_counter.most_common(10))
+    return counter, available_counter
+
+dota_frequency = frequency_text(dodrop)
+eldenring_frequency = frequency_text(eldrop)
+cs2_frequency = frequency_text(cadrop)
+
+```
+**각 게임별 빈도 수**
+> 도타   
+> ![dota2_1_bar](https://github.com/MMMMins/BigDataProject/assets/113413158/3a699820-4edf-41a5-a7b4-155639e94315)  
+> 엘든링    
+> ![elden_1_bar](https://github.com/MMMMins/BigDataProject/assets/113413158/8df839a0-2429-4347-82c0-82895badc268)   
+> 카스2
+> ![cs2_1_bar](https://github.com/MMMMins/BigDataProject/assets/113413158/d978799f-7234-4d27-8a7f-758ae0085d18)
+
+---
+
+##### BoW벡터사용
+```python
+from konlpy.tag import Okt
+from sklearn.feature_extraction.text import CountVectorizer
+
+def frequency_text(corpus):
+    okt = Okt()
+    #corpus = "".join(df['review'].tolist())
+    nouns = okt.nouns(corpus)
+    #available_counter = Counter({x: counter[x] for x in counter if len(x) > 1 or x =='핵'})
+    available_counter = {x: x for x in nouns if x not in stopwords}
+    return available_counter
+
+vect = CountVectorizer(tokenizer = lambda x: frequency_text(x))
+dota_bow_vect = vect.fit_transform(dodrop['review'].tolist())
+dota_word_list = vect.get_feature_names_out()
+dota_count_list = dota_bow_vect.toarray().sum(axis=0)
+
+vect = CountVectorizer(tokenizer = lambda x: frequency_text(x))
+elden_bow_vect = vect.fit_transform(eldrop['review'].tolist())
+elden_word_list = vect.get_feature_names_out()
+elden_count_list = elden_bow_vect.toarray().sum(axis=0)
+
+vect = CountVectorizer(tokenizer = lambda x: frequency_text(x))
+cs2_bow_vect = vect.fit_transform(cadrop['review'].tolist())
+cs2_word_list = vect.get_feature_names_out()
+cs2_count_list = cs2_bow_vect.toarray().sum(axis=0)
+
+def sorted_word_count(word_list, count_list):
+    word_count_dict = dict(zip(word_list, count_list))
+    word_count_dict = sorted(word_count_dict.items(), key=lambda x:x[1], reverse=True)
+    return word_count_dict
+
+dota_word_count = sorted_word_count(dota_word_list, dota_count_list)
+elden_word_count = sorted_word_count(elden_word_list, elden_count_list)
+cs2_word_count = sorted_word_count(cs2_word_list, cs2_count_list)
+```
+
+**각 게임별 빈도 수**
+> 도타   
+> ![dota2_bar](https://github.com/MMMMins/BigDataProject/assets/113413158/53491247-6cdd-4a85-bade-f5bbdf7e61fe)   
+> 엘든링    
+> ![elden_bar](https://github.com/MMMMins/BigDataProject/assets/113413158/a7b7200d-e75b-49d5-973a-789a3abbcbd8)   
+> 카스2   
+> ![cs2_bar](https://github.com/MMMMins/BigDataProject/assets/113413158/5bc5fff1-33c4-46f8-9027-2dfc1b621785)   
+
+#### 불용어 추가
+> 상위 15개 확인 결과 필요없는 단어 일부 발견   
+> 게임, 정도, 진짜, 도타, 카스, 처음, 글옵 불용어 추가   
+```python
+stopwords = pd.read_csv("https://raw.githubusercontent.com/yoonkt200/FastCampusDataset/master/korean_stopwords.txt").values.tolist()
+stopwords.extend(['게임','정도','진짜','도타','카스','처음','글옵'])
+stopwords[:]
+```
+> 이후 코드 재실행
+
+#### BoW벡터를 이용한 빈도수 측정값을 활용한 Word Cloud
+> 도타   
+> <img width="400" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/20759512-198f-47ee-ad65-855a3113f331">   
+> 엘든링   
+> <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/105a54ae-ad41-4b5c-9f35-f16ae58b0126">   
+> 카스2      
+> <img width="800" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/d1a4b1b3-66be-417d-8864-a7070264af7b">   
+
