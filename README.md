@@ -1,4 +1,4 @@
-# BigDataProject
+<img width="709" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/a65a943f-5e5d-4509-bd71-11cfad3a20bc"># BigDataProject
 스팀 리뷰 데이터를 읽고, (긍정/부정) 또는 사용자에게 맞는 게임 추천하기 
 
 1. 데이터 수집 및 저장 (***Steam Web API***)
@@ -677,4 +677,58 @@ stopwords[:]
 > <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/105a54ae-ad41-4b5c-9f35-f16ae58b0126">   
 > 카스2      
 > <img width="800" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/d1a4b1b3-66be-417d-8864-a7070264af7b">   
+
+---
+
+#### TF-IDF 적용
+>TF-IDF란?   
+>정보 검색과 텍스트 마이닝에서 이용하는 가중치로, 여러 문서로 이루어진 문서군이 있을 때 어떤 단어가 특정 문서 내에서 얼마나 중요한 것인지를 나타내는 통계적 수치
+
+```python
+from sklearn.feature_extraction.text import TfidfTransformer
+
+dota_tfidf_vectorizer = TfidfTransformer()
+dota_tf_idf_vect = dota_tfidf_vectorizer.fit_transform(dota_bow_vect)
+
+el_tfidf_vectorizer = TfidfTransformer()
+el_tf_idf_vect = el_tfidf_vectorizer.fit_transform(elden_bow_vect)
+
+cs_tfidf_vectorizer = TfidfTransformer()
+cs_tf_idf_vect = cs_tfidf_vectorizer.fit_transform(cs2_bow_vect)
+```
+
+**변환후 shape**   
+```python
+print(f"dota: {dota_tf_idf_vect.shape}")
+print(f"elden: {el_tf_idf_vect.shape}")
+print(f"cs2: {cs_tf_idf_vect.shape}")
+```
+<img width="300" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/461fc3fd-3f57-4e70-88fa-68cfbf40e6ff">   
+
+**첫번째 리뷰에서 모든 단어 중요도**   
+```python
+print(f"dota: \n{dota_tf_idf_vect[0]}")
+print(f"elden: \n{el_tf_idf_vect[0]}")
+print(f"cs2: \n{cs_tf_idf_vect[0]}")
+```
+<img width="450" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/807dfb8b-2cad-4fc9-8e37-1183045325dc">   
+
+** {단어: 인덱스} -> {인덱스: 단어} 변경
+```python
+dota_invert_index_vectorizer = {v: k for k, v in vect_dota.vocabulary_.items()}
+print("dota: "+str(dota_invert_index_vectorizer)[:100]+'...')
+
+el_invert_index_vectorizer = {v: k for k, v in vect_el.vocabulary_.items()}
+print("elden: "+str(el_invert_index_vectorizer)[:100]+'...')
+
+cs2_invert_index_vectorizer = {v: k for k, v in vect_cs2.vocabulary_.items()}
+print("cs2: "+str(cs2_invert_index_vectorizer)[:100]+'...')
+```
+>기존 매핑   
+><img width="300" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/a7745901-0935-46b5-965b-92a8013fef3d">   
+>변경 후   
+><img width="300" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/444c0382-f138-4a8b-8851-9f300f7625e7">   
+
+
+#### 리뷰 데이터 예측 모델 작성
 
