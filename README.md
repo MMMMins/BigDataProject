@@ -1,4 +1,4 @@
-<img width="709" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/a65a943f-5e5d-4509-bd71-11cfad3a20bc"># BigDataProject
+# BigDataProject
 스팀 리뷰 데이터를 읽고, (긍정/부정) 또는 사용자에게 맞는 게임 추천하기 
 
 1. 데이터 수집 및 저장 (***Steam Web API***)
