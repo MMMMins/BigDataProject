@@ -809,3 +809,117 @@ pltshow("카스2", cs2_case, cs2_pred)
 ![도타Matrix](https://github.com/MMMMins/BigDataProject/assets/113413158/89816413-241e-46ee-8a7c-dab26aeb607a)   
 ![엘든링Matrix](https://github.com/MMMMins/BigDataProject/assets/113413158/53929cf0-f2e8-4efc-8df8-367e665b88a0)   
 ![카스2Matrix](https://github.com/MMMMins/BigDataProject/assets/113413158/3d3c2410-bf57-4b7e-9de0-84b3efde651b)   
+
+#### 모델작업에서 문제점
+> 아무런 생각없이 각 게임마다 모델을 만들어서 모델을 활용할 수 가 없었다.
+> 이를 위해 각 게임리뷰 데이터를 통합하여서 모델을 만드는 과정이 필요했다.
+
+
+```python
+col = ['review', 'label']
+dodrop_df = dodrop[col]
+cadrop_df = cadrop[col]
+eldrop_df = eldrop[col]
+concat_df = pd.concat([dodrop_df, cadrop_df, eldrop_df], axis=0)
+```
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/f62a59c8-e5a9-4dab-a240-627136cd0cab">
+
+```python
+def no_label_data_result():
+    concat_df['review'] = concat_df['review'].apply(lambda x : re.sub(r'[^ ㄱ-ㅣ가-힣]+', " ", x))
+    concat_df['review'] = concat_df['review'].apply(lambda x: None if len(str(x).strip())<=1 else x )
+    #concat_df.drop(columns='Column1', inplace=True)
+    concat_df.drop(index=concat_df[concat_df['review'].isnull()==True].index,inplace=True)
+
+    vect = CountVectorizer(tokenizer = lambda x: frequency_text_Bow(x))
+    bow_vect = vect.fit_transform(concat_df['review'].tolist())
+    word_list = vect.get_feature_names_out()
+    count_list = bow_vect.toarray().sum(axis=0)
+
+    word_count = sorted_word_count(word_list, count_list)
+    word_cloud("no_label_data", word_count, "elden.jpeg")
+
+    word_dict = dict(word_count)
+
+    tfidf_vectorizer = TfidfTransformer()
+    tf_idf_vect = tfidf_vectorizer.fit_transform(bow_vect)
+    print(f"no_label_data: {tf_idf_vect.shape}")
+    print(f"no_label_data: \n{tf_idf_vect[0]}")
+
+    invert_index_vectorizer = {v: k for k, v in vect.vocabulary_.items()}
+    print("dota: "+str(invert_index_vectorizer)[:100]+'...')
+    case = testandtrain(tf_idf_vect, concat_df['label'])
+    print(f"case: {case['x_train'].shape}, {case['y_train'].shape}")
+    y_pred, lr = lrstart(case)
+    pltshow("집합", case, y_pred)
+    return case, tf_idf_vect
+```
+**결과**   
+<img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/84f8f2db-68fc-4691-a44b-0d7672579f77">   
+
+**클래스 재분류**   
+```python
+concat_df['label'].value_counts()
+```
+<img width="300" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/0226083a-ffca-4919-bb3a-713cf7acbce9">
+
+
+1. 첫번째 방법
+```python
+positive_random_idx = concat_df[concat_df['label']==1.0].sample(407, random_state=12).index.tolist()
+negative_random_idx = concat_df[concat_df['label']==0.0].sample(407, random_state=12).index.tolist()
+random_idx = positive_random_idx + negative_random_idx
+x = tf_idf_vect[random_idx]
+y = concat_df['label'][random_idx]
+
+print(x.shape, y.shape)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=1)
+lr2 = LogisticRegression(random_state = 0)
+lr2.fit(x_train, y_train)
+y_pred = lr2.predict(x_test)
+```
+> (814, 4085) (1708,)
+
+2. 두번째 방법
+```python
+from imblearn.over_sampling import SMOTE
+smote = SMOTE(random_state=42)
+trainX_over, trainY_over = smote.fit_resample(case["x_train"],case["y_train"])
+lr2 = LogisticRegression(random_state = 0)
+lr2.fit(trainX_over, trainY_over)
+y_pred = lr2.predict(case['x_test'])
+```
+> <img width="300" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/a4a90e83-1044-413d-bcc7-89f1e6422f7d">
+
+
+#### 모델 활용하여 데이터 예측
+
+```python
+#test
+review_input = input()
+review = vect.transform([review_input])
+tf_idf_vect = tfidf_vectorizer.fit_transform(review)
+y_pred = lr2.predict(tf_idf_vect)
+print(f'사용자가 입력한 리뷰 "{review_input}"의 예측결과: {y_pred[0]}')
+```
+
+1. [예시1]
+   - <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/52f081b1-3caf-4e03-b80b-b9cf6429df72">
+2. [예시2]
+   - <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/cd4bece0-5e7d-4bc3-9ac4-a25f5a888060">
+3. [예시3]
+   - <img width="600" alt="image" src="https://github.com/MMMMins/BigDataProject/assets/113413158/ef387d45-bc07-4419-913c-bfb2b6742ee5">
+
+## 결론
+원래 원하던 방향이 아니여서 많이 아쉽다.   
+원래의 방향은 전게임 리뷰를 크롤링해서    
+1. 사용자가 남긴 리뷰의 긍정/부정을 판별하여 기록하고
+2. 게임에 대한 전체적인 리뷰의 긍정/부정의 수치를 보여준다.
+3. 특정 사용자의 게임에 대한 선호 유형들을 보여준다
+   - ex) 특정 사용자의 게임 카테고리 비율, 남긴 리뷰의 긍정/부정 수치 등
+
+이런 프로세스를 가지고 시작하였는데, API 요청 제한을 예상못한 실수 및 데이터 양의 방대함을 제대로 확인못한 것이 큰거같다.   
+급하게 리뷰 데이터를 분석하였는데, 리뷰데이터를 읽어보는데 아무래도 플랫폼이 해외 기업, 해외 게임사로 인해서 영어랑 섞인 데이터가 많았고 다국적의 데이터들이 너무많았다.    
+또한 해당게임에서만 사용하는 특정 단어, 캐릭터 등에 대한 불용어 정의가 확실해야할 것 같았다   
+그리고 특정 장르에서는 특정 리뷰가 긍정이지만, 다른 장르로 해석할 경우 부정으로 볼 수 있을 것 같아서 리뷰 분석시 장르랑 섞어서 문자열에 대한 라벨링을 할 수 있는 방향이 있으면 좋을것 같았다.
+
